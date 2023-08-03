@@ -48,8 +48,10 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'social_django',
     'allauth',
+    'base',
     'allauth.account',
     'Auth',
+
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
