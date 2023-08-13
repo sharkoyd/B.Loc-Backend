@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .views import create_event , location
+from .views import register
 
 
 
@@ -7,6 +7,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 urlpatterns = [
-    path('create_event/',create_event ),
-    path('update_location/',location ),
+    path('register/',register ),
+
 ]
