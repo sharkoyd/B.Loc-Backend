@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -17,6 +18,10 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+MEDIA_URL = './'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'event_pictures')
+
+print (MEDIA_ROOT)
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Set the token expiration time (e.g., 1 hour)

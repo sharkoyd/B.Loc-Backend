@@ -21,6 +21,9 @@ def register(request):
     distance = data.get('distance')
     prefered_category_names = data.get('prefered_categories')  # Get category names directly
 
+    for i in range(len(prefered_category_names)):
+        prefered_category_names[i] = prefered_category_names[i].lower()
+
     if password != confirm_password:
         return Response({'error': 'Passwords do not match'})
     else:
@@ -33,14 +36,14 @@ def register(request):
 
             # Get EventCategory instances based on provided names
             prefered_categories = EventCategory.objects.filter(name__in=prefered_category_names)
-
+            print(prefered_categories)
             profile = Profile.objects.create(
                 user=user, events_distance=distance,
-                # Set preferred_categories using ManyToMany relation
             )
-            profile.prefered_categories.set(prefered_categories)  # Set ManyToMany relation
-            # token, created = Token.objects.get_or_create(user=user)
-            # print (token.access)
-            return JsonResponse( {"message" : 'User created successfully' } , status = 200)
+            
+            # Set preferred_categories using ManyToMany relation
+            profile.prefered_categories.set(prefered_categories)
+
+            return Response({"message": 'User created successfully'}, status=200)
         except IntegrityError:
-            return HttpResponse( 'User with that email already exists' , status=400)
+            return Response('User with that email already exists', status=400)

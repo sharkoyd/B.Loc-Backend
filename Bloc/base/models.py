@@ -32,7 +32,8 @@ class Event(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     creator = models.ForeignKey(User, on_delete=models.CASCADE)  # Link to the event creator (User model)
-    score = models.IntegerField(default=0)  # Event score or rating
+    likes = models.IntegerField(default=0)  # Number of likes
+    dislikes = models.IntegerField(default=0)  # Number of dislikes
     link = models.URLField(max_length=200, blank=True, null=True)
     distance = models.PositiveIntegerField(
         default=10, help_text='Maximum distance (in kilometers) you are willing to travel for events.'
@@ -40,4 +41,7 @@ class Event(models.Model):
     
 
 
-        
+class EventUserPreference(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    preference = models.CharField(choices=[('like', 'Like'), ('dislike', 'Dislike')], max_length=7) 

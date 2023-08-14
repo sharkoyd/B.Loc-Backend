@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from .misc import get_nearby_pref_cat_events,get_all_nearby_events
 from django.http import HttpResponse
-from .models import EventCategory  # Import your models
+from .models import EventCategory,EventUserPreference,Event  # Import your models
 from django.utils import timezone
 from datetime import datetime
 import pytz  # For timezone support
@@ -32,17 +32,21 @@ def location(request):
 def home(request):
     user = request.user
     nearby_pref_cat_events=get_nearby_pref_cat_events(user)
-    all_nearby_events=get_all_nearby_events(user)
-    return Response({'nearby_pref_cat_events': nearby_pref_cat_events,'all_nearby_events':all_nearby_events})
+    print (nearby_pref_cat_events)
+    #all_nearby_events=get_all_nearby_events(user)
+    return Response({'nearby_pref_cat_events': nearby_pref_cat_events})
+
 
 @api_view(['POST'])
 def create_event(request):
     data = request.data
+    
     event_name = data.get('event_name')
     lat = data.get('lat')
     long = data.get('long')
     location_name = data.get('location_name')
     event_category = data.get('event_category')
+    event_category  = event_category.lower()
     picture = data.get('picture')
     start_date = data.get('start_date')
     end_date = data.get('end_date')
@@ -53,9 +57,9 @@ def create_event(request):
     link = data.get('link')
     distance = data.get('distance')
     creator = request.user
-    event_category = EventCategory.objects.filter(name__in=event_category.lower())
+    event_category = EventCategory.objects.filter(name=event_category)
     event_category = event_category.first()
-
+    print (event_category)
     try: 
         
         event = Event.objects.create(event_name=event_name,lat=lat,long=long,location_name = location_name , event_category=event_category, creator = creator, start_date=aware_startdatetime,end_date=aware_enddatetime,link=link,distance=distance)
@@ -68,3 +72,43 @@ def create_event(request):
     
 
 
+@api_view(['PATCH'])
+def rateevent(request):
+    data = request.data
+    event_id = data.get('event_id')
+    preference = data.get('preference')
+    user = request.user
+
+    event = Event.objects.get(pk=event_id)
+
+    try:
+        user_preference = EventUserPreference.objects.get(event=event, user=user)
+        
+        if user_preference.preference == preference:
+            # If the user's preference matches the new preference, remove the preference
+            user_preference.delete()
+            if preference == 'like':
+                event.likes -= 1
+            elif preference == 'dislike':
+                event.dislikes -= 1
+        else:
+            # If the user's preference is different, update it
+            user_preference.preference = preference
+            user_preference.save()
+            if preference == 'like':
+                event.likes += 1
+                event.dislikes -= 1  # If user changes from dislike to like
+            elif preference == 'dislike':
+                event.likes -= 1  # If user changes from like to dislike
+                event.dislikes += 1
+
+    except EventUserPreference.DoesNotExist:
+        EventUserPreference.objects.create(event=event, user=user, preference=preference)
+        if preference == 'like':
+            event.likes += 1
+        elif preference == 'dislike':
+            event.dislikes += 1
+
+    event.save()
+
+    return HttpResponse(status=200)

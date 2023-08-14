@@ -44,18 +44,38 @@ def get_nearby_pref_cat_events(user):
     current_datetime = timezone.now()
 
     for category in preferred_categories:
-        for event in category.event_set.filter(end_date__gte=current_datetime.date()):
+        events_in_category = category.event_set.filter(end_date__gte=current_datetime.date())
+
+        for event in events_in_category:
             event_lat = event.lat
             event_lon = event.long
-
             distance = haversine_distance(user_lat, user_lon, event_lat, event_lon)
-            if distance <= max_distance_km and distance  <= event.distance:
+            
+            if distance <= max_distance_km and distance <= event.distance:
                 nearby_events.append(event)
 
     # Sort events by category name
     nearby_events.sort(key=lambda event: event.event_category.name)
 
-    return nearby_events
+    # Convert events data to JSON format
+    events_json = []
+    for event in nearby_events:
+        events_json.append({
+            'id': event.id,
+            'name': event.event_name,
+            'location_name': event.location_name,
+            'event_category': event.event_category.name,
+            'picture': event.picture.url,
+            'start_date': event.start_date,
+            'end_date': event.end_date,
+            'creator': event.creator.first_name + ' ' + event.creator.last_name,
+            'link': event.link,
+            'score':event.likes - event.dislikes,
+            # Add other fields you want to include in the JSON response
+        })
+
+    return events_json
+
 
 def get_all_nearby_events(user):
     user_profile = user.profile
