@@ -1,5 +1,5 @@
 import math
-from .models import Event
+from .models import Event, EventCategory
 from django.utils import timezone
 
 
@@ -32,7 +32,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
 
 
 
-def get_nearby_pref_cat_events(user):
+def get_nearby_pref_cat_all_events(user):
     user_profile = user.profile
     preferred_categories = user_profile.prefered_categories.all()
     user_lat = user_profile.lat
@@ -42,7 +42,6 @@ def get_nearby_pref_cat_events(user):
     nearby_events = []
 
     current_datetime = timezone.now()
-
     for category in preferred_categories:
         events_in_category = category.event_set.filter(end_date__gte=current_datetime.date())
 
@@ -53,10 +52,8 @@ def get_nearby_pref_cat_events(user):
             
             if distance <= max_distance_km and distance <= event.distance:
                 nearby_events.append(event)
-
     # Sort events by category name
     nearby_events.sort(key=lambda event: event.event_category.name)
-
     # Convert events data to JSON format
     events_json = []
     for event in nearby_events:
@@ -73,24 +70,95 @@ def get_nearby_pref_cat_events(user):
             'score':event.likes - event.dislikes,
             # Add other fields you want to include in the JSON response
         })
-
     return events_json
 
 
-def get_all_nearby_events(user):
+def get_nearby_pref_cat_num_events(user):
     user_profile = user.profile
+    preferred_categories = user_profile.prefered_categories.all()
     user_lat = user_profile.lat
     user_lon = user_profile.long
     max_distance_km = user_profile.events_distance
 
     nearby_events = []
+    events_per_category = 1  # Number of events to retrieve per category
 
-    for event in Event.objects.all():
+    current_datetime = timezone.now()
+    for category in preferred_categories:
+        events_in_category = category.event_set.filter(end_date__gte=current_datetime.date())
+
+        events_added = 0  # Counter for events added for the current category
+        for event in events_in_category:
+            if events_added >= events_per_category:
+                break  # Break if the required number of events is reached for this category
+            
+            event_lat = event.lat
+            event_lon = event.long
+            distance = haversine_distance(user_lat, user_lon, event_lat, event_lon)
+            
+            if distance <= max_distance_km and distance <= event.distance:
+                nearby_events.append(event)
+                events_added += 1
+                
+    # Sort events by category name
+    nearby_events.sort(key=lambda event: event.event_category.name)
+    
+    # Convert events data to JSON format
+    events_json = []
+    for event in nearby_events:
+        events_json.append({
+            'id': event.id,
+            'name': event.event_name,
+            'location_name': event.location_name,
+            'event_category': event.event_category.name,
+            'picture': event.picture.url,
+            'start_date': event.start_date,
+            'end_date': event.end_date,
+            'creator': event.creator.first_name + ' ' + event.creator.last_name,
+            'link': event.link,
+            'score': event.likes - event.dislikes,
+            # Add other fields you want to include in the JSON response
+        })
+    return events_json
+
+
+
+def get_custom_pref_events(user,distance,category):
+    user_profile = user.profile
+    category = EventCategory.objects.filter(name=category).first()
+    user_lat = user_profile.lat
+    user_lon = user_profile.long
+    max_distance_km = distance
+
+    nearby_events = []
+
+    current_datetime = timezone.now()
+
+    event_in_category = category.event_set.filter(end_date__gte=current_datetime.date())
+
+    for event in event_in_category:
         event_lat = event.lat
         event_lon = event.long
-
         distance = haversine_distance(user_lat, user_lon, event_lat, event_lon)
-        if distance <= max_distance_km and distance  <= event.distance:
+        
+        if distance <= max_distance_km and distance <= event.distance:
             nearby_events.append(event)
-
-    return nearby_events
+    # Sort events by category name
+    nearby_events.sort(key=lambda event: event.event_category.name)
+    # Convert events data to JSON format
+    events_json = []
+    for event in nearby_events:
+        events_json.append({
+            'id': event.id,
+            'name': event.event_name,
+            'location_name': event.location_name,
+            'event_category': event.event_category.name,
+            'picture': event.picture.url,
+            'start_date': event.start_date,
+            'end_date': event.end_date,
+            'creator': event.creator.first_name + ' ' + event.creator.last_name,
+            'link': event.link,
+            'score':event.likes - event.dislikes,
+            # Add other fields you want to include in the JSON response
+        })
+    return events_json

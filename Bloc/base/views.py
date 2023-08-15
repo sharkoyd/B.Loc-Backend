@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from .models import Event
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-from .misc import get_nearby_pref_cat_events,get_all_nearby_events
+from .misc import get_nearby_pref_cat_all_events,get_nearby_pref_cat_num_events,get_custom_pref_events
 from django.http import HttpResponse
 from .models import EventCategory,EventUserPreference,Event  # Import your models
 from django.utils import timezone
@@ -30,11 +30,20 @@ def location(request):
 
 @api_view(['GET'])
 def home(request):
+    data=request.data
     user = request.user
-    nearby_pref_cat_events=get_nearby_pref_cat_events(user)
-    print (nearby_pref_cat_events)
-    #all_nearby_events=get_all_nearby_events(user)
-    return Response({'nearby_pref_cat_events': nearby_pref_cat_events})
+    type = data.get('type')
+    if type == 'all':
+        events=get_nearby_pref_cat_all_events(user)
+    elif type == 'partial':
+        events = get_nearby_pref_cat_num_events(user)
+    elif type == 'custom':
+        distance = data.get('distance')
+        category = data.get('category').lower()
+        events = get_custom_pref_events(user,distance,category)
+
+    print(events)
+    return Response({'events': events})
 
 
 @api_view(['POST'])
@@ -112,3 +121,6 @@ def rateevent(request):
     event.save()
 
     return HttpResponse(status=200)
+
+
+
