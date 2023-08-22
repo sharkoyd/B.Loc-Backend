@@ -7,9 +7,16 @@ from .models import Profile, EventCategory  # Import your models
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from django.http import JsonResponse
+from social_django.utils import psa
+from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
+from social_django.utils import load_backend, load_strategy
+
+
+
 
 @api_view(['POST'])
-
 @permission_classes([AllowAny])
 def register(request):
     data = request.data
@@ -44,6 +51,43 @@ def register(request):
             # Set preferred_categories using ManyToMany relation
             profile.prefered_categories.set(prefered_categories)
 
+            return Response({"message": 'User created successfully'}, status=200)
+        except IntegrityError:
+            return Response('User with that email already exists', status=400)
+
+
+
+
+@api_view(['POST'])
+def profile_exist(request):
+    user=request.user
+    try:
+        profile = Profile.objects.get(user=user)
+        return Response({"message": 'Profile exist'}, status=200)
+    except Profile.DoesNotExist:
+        return Response({"message": 'Profile does not exist'}, status=400)
+    
+
+@api_view(['POST'])
+def finish_signup(request):
+    user=request.user
+    data = request.data
+    distance = data.get('distance')
+    prefered_category_names = data.get('prefered_categories')  # Get category names directly
+
+    for i in range(len(prefered_category_names)):
+        prefered_category_names[i] = prefered_category_names[i].lower()
+
+        try:
+            # Get EventCategory instances based on provided names
+            prefered_categories = EventCategory.objects.filter(name__in=prefered_category_names)
+            print(prefered_categories)
+            profile = Profile.objects.create(
+                user=user, events_distance=distance,
+            )
+            
+            # Set preferred_categories using ManyToMany relation
+            profile.prefered_categories.set(prefered_categories)
             return Response({"message": 'User created successfully'}, status=200)
         except IntegrityError:
             return Response('User with that email already exists', status=400)

@@ -24,7 +24,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'event_pictures')
 print (MEDIA_ROOT)
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Set the token expiration time (e.g., 1 hour)
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=350),  # Set the token expiration time (e.g., 1 hour)
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),  # Set the sliding token refresh expiration time (e.g., 1 day)
 }
 # Quick-start development settings - unsuitable for production
@@ -38,7 +38,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["192.168.1.14" , "127.0.0.1"]
 
-
 # Application definitionpython manage.py startapp appname
 
 INSTALLED_APPS = [
@@ -51,17 +50,21 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
-    'social_django',
-    'allauth',
-    'base',
-    'allauth.account',
-    'Auth',
 
+    'base',
+    'Auth',
+    #Social Auth
+    'oauth2_provider',
+    'social_django',
+    'drf_social_oauth2',
 ]
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
+        'drf_social_oauth2.authentication.SocialAuthentication',
 
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -69,24 +72,28 @@ REST_FRAMEWORK = {
     ],
 }
 
+
 AUTHENTICATION_BACKENDS = (
+    # Google  OAuth2
     'social_core.backends.google.GoogleOAuth2',
+
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
+    'drf_social_oauth2.backends.DjangoOAuth2',
 )
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = 'YOUR_GOOGLE_CLIENT_ID'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'YOUR_GOOGLE_CLIENT_SECRET'
-SOCIAL_AUTH_URL_NAMESPACE = 'social'
-LOGIN_REDIRECT_URL = '/'
-
+# Define SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE to get extra permissions from Google.
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
-    'email',
-    'profile',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
 ]
+# Google configuration
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '548673393275-ukupogrdrtfbmvdkd4n2mlsekl328hc5.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
 
 
-SITE_ID = 1
+
+
+
 
 AUTHENTICATION_CLASSES = [
     'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -115,7 +122,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.request',
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
             ],

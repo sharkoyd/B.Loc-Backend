@@ -1,5 +1,5 @@
 import math
-from .models import Event, EventCategory
+from .models import Event, EventCategory, EventUserPreference
 from django.utils import timezone
 
 
@@ -68,7 +68,7 @@ def get_nearby_pref_cat_all_events(user):
             'creator': event.creator.first_name + ' ' + event.creator.last_name,
             'link': event.link,
             'score':event.likes - event.dislikes,
-            # Add other fields you want to include in the JSON response
+            'like':1 if EventUserPreference.objects.filter(user=user,event=event,preference='like').exists() else (-1 if EventUserPreference.objects.filter(user=user,event=event,preference='dislike').exists() else 0)  ,            # Add other fields you want to include in the JSON response
         })
     return events_json
 
@@ -81,7 +81,7 @@ def get_nearby_pref_cat_num_events(user):
     max_distance_km = user_profile.events_distance
 
     nearby_events = []
-    events_per_category = 1  # Number of events to retrieve per category
+    events_per_category = 3  # Number of events to retrieve per category
 
     current_datetime = timezone.now()
     for category in preferred_categories:
@@ -117,7 +117,7 @@ def get_nearby_pref_cat_num_events(user):
             'creator': event.creator.first_name + ' ' + event.creator.last_name,
             'link': event.link,
             'score': event.likes - event.dislikes,
-            # Add other fields you want to include in the JSON response
+            'like':1 if EventUserPreference.objects.filter(user=user,event=event,preference='like').exists() else (-1 if EventUserPreference.objects.filter(user=user,event=event,preference='dislike').exists() else 0)  ,            # Add other fields you want to include in the JSON response
         })
     return events_json
 
@@ -159,6 +159,6 @@ def get_custom_pref_events(user,distance,category):
             'creator': event.creator.first_name + ' ' + event.creator.last_name,
             'link': event.link,
             'score':event.likes - event.dislikes,
-            # Add other fields you want to include in the JSON response
+            'like':1 if EventUserPreference.objects.filter(user=user,event=event,preference='like').exists() else (-1 if EventUserPreference.objects.filter(user=user,event=event,preference='dislike').exists() else 0)  ,            # Add other fields you want to include in the JSON response
         })
     return events_json

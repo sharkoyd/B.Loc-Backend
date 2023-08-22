@@ -30,19 +30,18 @@ def location(request):
 
 @api_view(['GET'])
 def home(request):
-    data=request.data
     user = request.user
-    type = data.get('type')
-    if type == 'all':
-        events=get_nearby_pref_cat_all_events(user)
-    elif type == 'partial':
-        events = get_nearby_pref_cat_num_events(user)
-    elif type == 'custom':
-        distance = data.get('distance')
-        category = data.get('category').lower()
-        events = get_custom_pref_events(user,distance,category)
+    event_type = request.query_params.get('type')
 
-    print(events)
+    if event_type == 'all':
+        events = get_nearby_pref_cat_all_events(user)
+    elif event_type == 'partial':
+        events = get_nearby_pref_cat_num_events(user)
+    elif event_type == 'custom':
+        distance =int(request.query_params.get('distance')) 
+        category = request.query_params.get('category').lower()
+        events = get_custom_pref_events(user, distance, category)
+    print (events)
     return Response({'events': events})
 
 
@@ -84,16 +83,17 @@ def create_event(request):
 @api_view(['PATCH'])
 def rateevent(request):
     data = request.data
+    print (data)
     event_id = data.get('event_id')
     preference = data.get('preference')
     user = request.user
-
+    #print (preference)
     event = Event.objects.get(pk=event_id)
 
     try:
         user_preference = EventUserPreference.objects.get(event=event, user=user)
-        
-        if user_preference.preference == preference:
+        print (user_preference)
+        if user_preference.preference.lower() == preference:
             # If the user's preference matches the new preference, remove the preference
             user_preference.delete()
             if preference == 'like':
@@ -124,3 +124,9 @@ def rateevent(request):
 
 
 
+@api_view(['GET'])
+def userinfo(request):
+    user = request.user
+    categories = user.profile.prefered_categories.all()
+    categories = [category.name for category in categories]
+    return Response({"profile" : {'username': user.username, 'first_name': user.first_name, 'last_name': user.last_name,'categories':categories, 'distance': user.profile.events_distance,  }})
