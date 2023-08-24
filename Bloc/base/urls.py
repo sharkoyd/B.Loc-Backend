@@ -3,7 +3,6 @@ from .views import create_event , location , home,rateevent , userinfo
 
 
 
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 
 urlpatterns = [

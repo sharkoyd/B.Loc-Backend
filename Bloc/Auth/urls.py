@@ -3,7 +3,6 @@ from .views import register,profile_exist , finish_signup
 
 
 
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 
 urlpatterns = [

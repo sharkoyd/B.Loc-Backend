@@ -32,17 +32,21 @@ def location(request):
 def home(request):
     user = request.user
     event_type = request.query_params.get('type')
-
-    if event_type == 'all':
-        events = get_nearby_pref_cat_all_events(user)
-    elif event_type == 'partial':
-        events = get_nearby_pref_cat_num_events(user)
-    elif event_type == 'custom':
-        distance =int(request.query_params.get('distance')) 
-        category = request.query_params.get('category').lower()
-        events = get_custom_pref_events(user, distance, category)
-    print (events)
-    return Response({'events': events})
+    print (event_type)
+    try:
+        if event_type == 'all':
+            events = get_nearby_pref_cat_all_events(user)
+        elif event_type == 'partial':
+            events = get_nearby_pref_cat_num_events(user)
+        elif event_type == 'custom':
+            distance =int(request.query_params.get('distance')) 
+            category = request.query_params.get('category').lower()
+            events = get_custom_pref_events(user, distance, category)
+        return Response({'events': events})
+    except Exception as error:
+        print (error)
+        return HttpResponse('Something went wrong' , status = 400)
+    
 
 
 @api_view(['POST'])

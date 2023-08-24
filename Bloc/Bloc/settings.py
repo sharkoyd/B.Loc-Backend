@@ -21,12 +21,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = './'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'event_pictures')
 
-print (MEDIA_ROOT)
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=350),  # Set the token expiration time (e.g., 1 hour)
-    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),  # Set the sliding token refresh expiration time (e.g., 1 day)
-}
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -48,8 +45,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken',
-    'rest_framework_simplejwt',
 
     'base',
     'Auth',
@@ -61,8 +56,6 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.TokenAuthentication',
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',  # django-oauth-toolkit >= 1.0.0
         'drf_social_oauth2.authentication.SocialAuthentication',
 
@@ -94,10 +87,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
 
 
 
-
-AUTHENTICATION_CLASSES = [
-    'rest_framework_simplejwt.authentication.JWTAuthentication',
-]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
