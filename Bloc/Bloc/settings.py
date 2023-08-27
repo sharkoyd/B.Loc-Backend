@@ -18,8 +18,8 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-MEDIA_URL = './'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'event_pictures')
+print (MEDIA_ROOT)
 
 
 
@@ -72,6 +72,9 @@ AUTHENTICATION_BACKENDS = (
 
     'django.contrib.auth.backends.ModelBackend',
     'drf_social_oauth2.backends.DjangoOAuth2',
+    # Facebook OAuth2
+    'social_core.backends.facebook.FacebookAppOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
 )
 
 # Define SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE to get extra permissions from Google.
@@ -129,10 +132,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'railway',
         'USER': 'postgres',
-        'PASSWORD': 'xFo80TINJBmfIAJ5VuFH',
-        'HOST': 'containers-us-west-158.railway.app',
-        'PORT': '6100',
+        'PASSWORD': 'bXs0dWfViVJn9LnJc0tV',
+        'HOST': 'containers-us-west-186.railway.app',
+        'PORT': '6379',
     }
+
 }
 
 
@@ -176,3 +180,12 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SOCIAL_AUTH_FACEBOOK_KEY = '827275948778191'
+SOCIAL_AUTH_FACEBOOK_SECRET = 'd07ccfd16b3cf5dc3612df1d9547d66a'
+
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id, name, email'
+}
